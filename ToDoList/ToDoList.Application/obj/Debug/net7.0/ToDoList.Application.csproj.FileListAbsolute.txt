@@ -1,0 +1,15 @@
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\bin\Debug\net7.0\ToDoList.Application.deps.json
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\bin\Debug\net7.0\ToDoList.Application.dll
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\bin\Debug\net7.0\ToDoList.Application.pdb
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.csproj.AssemblyReference.cache
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.AssemblyInfoInputs.cache
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.AssemblyInfo.cs
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.csproj.CoreCompileInputs.cache
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.dll
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\refint\ToDoList.Application.dll
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.pdb
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ref\ToDoList.Application.dll
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\bin\Debug\net7.0\ToDoList.Domain.dll
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\bin\Debug\net7.0\ToDoList.Domain.pdb
+C:\Users\Professional\source\repos\ToDoList\ToDoList.Application\obj\Debug\net7.0\ToDoList.Application.csproj.CopyComplete

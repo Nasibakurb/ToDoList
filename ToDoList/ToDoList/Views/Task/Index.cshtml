@@ -1,0 +1,186 @@
+﻿@using ToDoList.Domain.Enum;
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h4 class="mb-3 text-muted">Создание задачи</h4>
+<form id="createTaskForm">
+    <div class="mb-3">
+        <label class="form-label">Название</label>
+        <input name="name" type="text" class="form-control" />
+    </div>
+
+    <label class="form-label">Приоритет</label>
+    <select name="priority" class="form-select mb-3" asp-items="Html.GetEnumSelectList<Priority>()"></select>
+    
+    <div class="mb-3">
+        <label class="form-label">Описание</label>
+        <textarea name="description" type="text" class="form-control" rows="4"> </textarea>
+    </div>
+    
+    <button id="createTask" class="btn-primary">Создать</button>
+</form>
+</br>
+
+<div class="row"> @*фильтрация*@
+    <div class="form-group col-md-6">
+        <label class="col-form-label">Название</label>
+        <input name="nameTask" type="text" class="form-control" />
+    </div>
+    <div class="form-group col-md-6">
+        <label class="col-form-label">Приоритет</label>
+        <select id="prioritySearch" class="form-control mb-3" asp-items="Html.GetEnumSelectList<Priority>()">
+            <option value="">Все</option>
+        </select>
+    </div>
+</div>
+
+</br>
+<table class="table table-dark table-hover" id="taskTableId">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Сложность</th>
+            <th>Описание</th>
+            <th>Готовность</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+@section Scripts{
+    <script type ="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script> @*Таблица*@
+    <script type ="text/javascript" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script> @*филтры в табл*@
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> @*Всплывающ. окно при выполнение или ошибки*@
+    <script>
+        const swalWithBootstrapButtons = Swal.mixin({ /*всплыв. окно для кнопки "действие"*/ 
+            customClass: {
+                confirmButton: "btn btn-success",
+            },
+            buttonsStyling: false
+        });
+
+
+
+        let dataTable = $("#taskTableId").DataTable({
+            info: false, /*общая информация*/
+            serverSide: true, /*базовые операции (сортировка, пагинация)*/ 
+            searching: false, /*инпут для поиска*/
+            processing: true,
+            paging: true, /*пагинация*/
+            sorting: false, /*сортировка*/
+            ajax: {
+                type: "POST",
+                url: '@Url.Action("TaskHeandlet")',
+                data: function (d) {
+                    d.filter = {
+                        Name: $('input[name="nameTask"]').val(),/*фильтрация*/
+                        Priority: $('#prioritySearch option:selected').val(), /*фильтрация*/
+                        PageSize: d.length,  /*пагинация*/
+                        Skip: d.start, /*пагинация*/
+                    };
+                }  
+            },
+            columns:[ /*колонки в таблицы*/
+                { data: 'name' },
+                { data: 'priority' },
+                { data: "description" },
+                { data: "isDone" },
+                { 
+                    data: null,
+                    sortable: false,
+                    render: function (data, type)
+                    {
+                        return '<button class="btn btn-success btn-sm center-block">Выполнить</button>'
+                    }
+                },
+            ],
+            createdRow: function (numberRow, data) /* настр. отобр.строк в таблице*/
+            {
+                var headerComplate = function(){ /* настройки вспывающ. окна кнопки "действий" ч2*/
+                    swalWithBootstrapButtons.fire({
+                        title: "Вы уверены?",
+                        icon: "warning",
+                        confirmButtonText: "Да",
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) { /*логика по смене "готовности"*/
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("EndTask")',
+                                data: { id: data.id}, /*меняет по id*/
+                                success: function (response) { /* При успешном выполнении*/
+                                    Swal.fire({
+                                        title: 'Информация',
+                                        text: response.description,
+                                        icon: 'success',
+                                        confirmButtonText: 'Закрыть'
+                                    })
+                                    dataTable.draw();
+                                },
+                                error: function (response) { /* При ошибки*/
+                                    Swal.fire({
+                                        title: 'Информация',
+                                        text: response.responseJSON.description,
+                                        icon: 'error',
+                                        confirmButtonText: 'Закрыть'
+                                    })
+                                },
+                            })
+                        }
+                    });
+                }
+
+                for(var i = 0; i < dataTable.columns().header().length - 1; i++)
+                {
+                    $('td', numberRow).eq(i).css('cursor', 'pointer');
+                    $('td', numberRow).eq(i).on('click', null);
+                }
+                $('td button', numberRow).on('click',headerComplate)
+            } 
+        });
+
+        $("input[name='nameTask']").on('change', function () { /*после введение таблица обновляется*/
+            dataTable.draw();
+        })
+        $("#prioritySearch").on('change', function () {
+            dataTable.draw();
+        })
+
+        $("#createTask").on("click", function(e)
+        {
+            e.preventDefault(); /*После запроса страница не обновляется*/
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Create", "Task")',
+                data: $("#createTaskForm").serialize(),
+
+                success: function (response) { /* При успешном выполнении*/
+                    Swal.fire({
+                        title: 'Информация',
+                        text: response.description,
+                        icon: 'success',
+                        confirmButtonText: 'Закрыть'
+                    })
+                },
+                error: function (response) { /* При ошибки*/
+                    Swal.fire({
+                        title: 'Информация',
+                        text: response.responseJSON.description,
+                        icon: 'error',
+                        confirmButtonText: 'Закрыть'
+                    })
+                },
+
+            });
+
+        });
+    </script>
+
+
+}
+
+
+
+
