@@ -82,5 +82,29 @@ namespace ToDoList.Controllers
             return BadRequest(new { description = result.Description });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete (long id)
+        {
+            var response = await _service.Delete(id);
+
+            if (response.StatusCode == Domain.Enum.StatusCode.Ok) // Если объект создался
+            { // Метод "ок" с объектом json c содерж. описание 
+                return Ok(new { description = response.Description });
+            }
+            return BadRequest(new { description = response.Description });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(CreateTaskModel model)
+        {
+            var response = await _service.Edit(model);
+
+            if (response.StatusCode == Domain.Enum.StatusCode.Ok) // Если объект создался
+            { // Метод "ок" с объектом json c содерж. описание 
+                return Ok(new { description = response.Description });
+            }
+            return BadRequest(new { description = response.Description });
+        }
+
     }
 }

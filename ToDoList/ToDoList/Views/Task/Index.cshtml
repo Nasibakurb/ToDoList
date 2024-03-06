@@ -7,15 +7,15 @@
 <form id="createTaskForm">
     <div class="mb-3">
         <label class="form-label">Название</label>
-        <input name="name" type="text" class="form-control" />
+        <input id="taskNameInput" name="name" type="text" class="form-control" />
     </div>
 
     <label class="form-label">Приоритет</label>
-    <select name="priority" class="form-select mb-3" asp-items="Html.GetEnumSelectList<Priority>()"></select>
+    <select name="priority" id="taskPriorityInput" class="form-select mb-3" asp-items="Html.GetEnumSelectList<Priority>()"></select>
     
     <div class="mb-3">
         <label class="form-label">Описание</label>
-        <textarea name="description" type="text" class="form-control" rows="4"> </textarea>
+        <textarea id="taskDescriptionInput" name="description" type="text" class="form-control" rows="4"> </textarea>
     </div>
     
     <button id="createTask" class="btn-primary">Создать</button>
@@ -44,6 +44,8 @@
             <th>Описание</th>
             <th>Готовность</th>
             <th>Действие</th>
+            <th>Редактировать</th>
+            <th>Удалить</th>
         </tr>
     </thead>
     <tbody></tbody>
@@ -60,8 +62,6 @@
             },
             buttonsStyling: false
         });
-
-
 
         let dataTable = $("#taskTableId").DataTable({
             info: false, /*общая информация*/
@@ -93,6 +93,21 @@
                     render: function (data, type)
                     {
                         return '<button class="btn btn-success btn-sm center-block">Выполнить</button>'
+                    }
+                },
+                {
+                    data: null,
+                    sortable: false,
+                    render: function (data, type) {
+                        return '<button class="btn btn-primary btn-sm center-block edit-btn">Редактировать</button>'
+
+                    }
+                },
+                {
+                    data: null,
+                    sortable: false,
+                    render: function (data, type) {
+                        return '<button class="btn btn-danger btn-sm center-block delete-btn">Удалить</button>'
                     }
                 },
             ],
@@ -132,12 +147,91 @@
                     });
                 }
 
+                var deleteTask = function () { /* настройки вспывающ. окна кнопки "действий" ч2*/
+                    swalWithBootstrapButtons.fire({
+                        title: "Вы уверены, что хотите удалить?",
+                        icon: "warning",
+                        confirmButtonText: "Да",
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) { /*логика по смене "готовности"*/
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("Delete")',
+                                data: { id: data.id }, /*меняет по id*/
+                                success: function (response) { /* При успешном выполнении*/
+                                    Swal.fire({
+                                        title: 'Информация',
+                                        text: response.description,
+                                        icon: 'success',
+                                        confirmButtonText: 'Закрыть'
+                                    })
+                                    dataTable.draw();
+                                },
+                                error: function (response) { /* При ошибки*/
+                                    Swal.fire({
+                                        title: 'Информация',
+                                        text: response.responseJSON.description,
+                                        icon: 'error',
+                                        confirmButtonText: 'Закрыть'
+                                    })
+                                },
+                            })
+                        }
+                    });
+                }
+
+                var editTask = function () {
+                    swalWithBootstrapButtons.fire({
+                        title: "Вы уверены, что хотите редактировать?",
+                        icon: "warning",
+                        confirmButtonText: "Да",
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Добавляем идентификатор задачи к данным формы
+                            var formData = {
+                                id: data.id, // Идентификатор задачи
+                                name: $("#taskNameInput").val(), // Значение поля с именем задачи
+                                description: $("#taskDescriptionInput").val(), // Значение поля с описанием задачи
+                                priority: $("#taskPriorityInput").val() // Значение поля с приоритетом задачи
+                            };
+
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("Edit")',
+                                data: formData,
+                                success: function (response) {
+                                    Swal.fire({
+                                        title: 'Информация',
+                                        text: response.description,
+                                        icon: 'success',
+                                        confirmButtonText: 'Закрыть'
+                                    });
+                                    dataTable.draw();
+                                },
+                                error: function (response) {
+                                    Swal.fire({
+                                        title: 'Информация',
+                                        text: response.responseJSON.description,
+                                        icon: 'error',
+                                        confirmButtonText: 'Закрыть'
+                                    })
+                                },
+                            })
+                        }
+                    });
+                }
+
+
                 for(var i = 0; i < dataTable.columns().header().length - 1; i++)
                 {
                     $('td', numberRow).eq(i).css('cursor', 'pointer');
                     $('td', numberRow).eq(i).on('click', null);
                 }
-                $('td button', numberRow).on('click',headerComplate)
+                $('td button', numberRow).on('click',headerComplate);
+                $('td button.delete-btn', numberRow).on('click',deleteTask)
+                $('td button.edit-btn', numberRow).on('click',editTask)
             } 
         });
 
@@ -176,6 +270,8 @@
             });
 
         });
+
+
     </script>
 
 

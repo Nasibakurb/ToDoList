@@ -12,5 +12,8 @@ namespace ToDoList.Domain.Interfaces
         Task<IBaseResponse<bool>> EndTask(long id);
         Task<IBaseResponse<IEnumerable<TaskCompletedViewModel>>> GetComplatedTask();
         Task<IBaseResponse<IEnumerable<TaskViewModel>>>CalculateCompletedTask();
+        Task<IBaseResponse<TaskEntity>> Delete(long id);
+        Task<IBaseResponse<TaskEntity>> Edit(CreateTaskModel model);
+
     }
 }

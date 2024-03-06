@@ -105,6 +105,82 @@ namespace ToDoList.Infrastructure.Service
             }
         }
 
+        public async Task<IBaseResponse<TaskEntity>> Delete(long id)
+        {
+            try
+            {
+               var task = await _repository.GetAll()
+                    .FirstOrDefaultAsync (x => x.Id == id);
+                if (task == null) 
+                {
+                    return new BaseResponse<TaskEntity>()
+                    {
+                        Description = $"Задача не найдена",
+                        StatusCode = StatusCode.TaskNotFound
+                    };
+                }
+                await _repository.Delete(task);
+
+                return new BaseResponse<TaskEntity>()
+                {
+                    Description = $"Задача удалена",
+                    StatusCode = StatusCode.Ok
+                };
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"[TaskService.Delete]:{ex.Message}");
+                return new BaseResponse<TaskEntity>()
+                {
+                    Description = $"Ошибка: {ex.Message}",
+                    StatusCode = StatusCode.InternalServerError
+                };
+                
+            }
+        }
+
+        public async Task<IBaseResponse<TaskEntity>> Edit(CreateTaskModel model)
+        {
+            try
+            {
+                model.Validation();
+                _logger.LogInformation($"Запрос на редактирование задачи: {model.Id}");
+
+                var task = await _repository.GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == model.Id);
+                if (task == null) // Если задача не найдена
+                {
+                    return new BaseResponse<TaskEntity>()
+                    {
+                        Description = "Задача не найдена",
+                        StatusCode = StatusCode.TaskNotFound
+                    };
+                }
+                task.Name = model.Name;
+                task.Description = model.Description;
+                task.Priority = model.Priority;
+
+                await _repository.Update(task); // Обновление задачи в базе данных
+                _logger.LogInformation($"Задача успешно обновлена: {model.Id}");
+
+                return new BaseResponse<TaskEntity>()
+                {
+                    Description = "Задача успешно обновлена",
+                    StatusCode = StatusCode.Ok
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"[TaskService.Edit]:{ex.Message}");
+                return new BaseResponse<TaskEntity>()
+                {
+                    Description = $"Ошибка: {ex.Message}",
+                    StatusCode = StatusCode.InternalServerError
+                };
+            }
+        }
+
         public async Task<IBaseResponse<bool>> EndTask(long id)
         { // Заверщение задачи по id
             try
